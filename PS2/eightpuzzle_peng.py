@@ -4,6 +4,34 @@ from collections import deque
 import sys
 import time
 
+
+"""
+[((1, 0, 8, 5, 2, 4, 7, 3, 6), None), 
+((1, 2, 8, 5, 0, 4, 7, 3, 6), 'Down'), 
+((1, 2, 8, 5, 4, 0, 7, 3, 6), 'Right'), 
+((1, 2, 0, 5, 4, 8, 7, 3, 6), 'Up'), 
+((1, 0, 2, 5, 4, 8, 7, 3, 6), 'Left'), 
+((1, 4, 2, 5, 0, 8, 7, 3, 6), 'Down'), 
+((1, 4, 2, 0, 5, 8, 7, 3, 6), 'Left'), 
+((1, 4, 2, 7, 5, 8, 0, 3, 6), 'Down'), 
+((1, 4, 2, 7, 5, 8, 3, 0, 6), 'Right'), 
+((1, 4, 2, 7, 5, 8, 3, 6, 0), 'Right'), 
+((1, 4, 2, 7, 5, 0, 3, 6, 8), 'Up'), 
+((1, 4, 2, 7, 0, 5, 3, 6, 8), 'Left'), 
+((1, 4, 2, 0, 7, 5, 3, 6, 8), 'Left'), 
+((1, 4, 2, 3, 7, 5, 0, 6, 8), 'Down'), 
+((1, 4, 2, 3, 7, 5, 6, 0, 8), 'Right'), 
+((1, 4, 2, 3, 0, 5, 6, 7, 8), 'Up'), 
+((1, 0, 2, 3, 4, 5, 6, 7, 8), 'Up'), 
+((0, 1, 2, 3, 4, 5, 6, 7, 8), 'Left')]
+"""
+
+"""For last question, not sure if I uderstand the question well, I guess 
+the question turns to be " what is the running time of heap search?"
+my answer is O(n)
+"""
+
+
 class BFS(Search):
 
     def search(self, initial_state):
@@ -58,7 +86,8 @@ class BFS(Search):
         action_n is None
         """
         path=[]
-        while node!= None and self.visited[node][1]!=0:
+#        while node!= None and self.visited[node][1]!=0:
+        while node!= None:
             path.insert(0,(node,self.visited[node][2]))
             node=self.parent(node)
         return path   
@@ -123,14 +152,20 @@ class AStar(Search):
            
             nextActions = self.problem.actions(state)
 #            print(nextActions)
+            level = level + 1
             for action in nextActions:
 #                print(action)
                 newState = self.problem.result(state, action)[0]
 #                print(newState)
+                "make sure do not get back to visited node, to avoid loop"
                 if newState not in frontier and newState not in self.visited.keys():
+                    
                     "get the cost of a node then update frontier"
-                    frontier[newState] = self.ManhattanDistance(newState)
-                    self.visited[newState] =(state, level+1, action)
+                    "f(n) = g(n) + h(n)"
+                    "g(n) is actually depth of tree in this case, which is variable 'level'  "
+                    "h(n) is ManhattanDistance in this case"
+                    frontier[newState] = self.ManhattanDistance(newState) + level
+                    self.visited[newState] =(state, level, action)
                     if self.problem.isgoal(newState):
                         return newState
                     
@@ -138,14 +173,15 @@ class AStar(Search):
     "find the key with minimal value in a dictionary"
     def findMinimumValue(self, dic):
         value = sys.maxsize
+        key = None
         for item in dic:
             if dic[item] < value:
                 value = dic[item]
-        for item in dic:
-            if dic[item] == value:
-                return item
+                key = item
+        return key
+    
                 
-        
+    "get the ManhattanDistance for every state"    
     def ManhattanDistance(self,state):
         
         goalXY = {}
@@ -177,7 +213,8 @@ class AStar(Search):
         action_n is None
         """
         path=[]
-        while node!= None and self.visited[node][1]!=0:
+#        while node!= None and self.visited[node][1]!=0:
+        while node!= None:
             path.insert(0,(node,self.visited[node][2]))
             node=self.parent(node)
         return path   
@@ -213,7 +250,7 @@ class AStar(Search):
 if __name__ == "__main__":
     
     puzzle = NNPuzzle(3)
-    initial = puzzle.get_shuffled_state(10)
+    initial = puzzle.get_shuffled_state(18)
     "get the result via BFS"
     solver1 = BFS(puzzle)
     start1 = time.time()
@@ -233,11 +270,18 @@ if __name__ == "__main__":
     print("Found goal", goal2, " in " , runtime2,  " seconds")
     for sa in solver2.solution(goal2):
         puzzle.display(sa)
-#    "get result for (1,0,8,5,2,4,7,3,6) via AStar"
-#    initial3 = (1,0,8,5,2,4,7,3,6)
-#    solver3 = AStar(puzzle)
-#    goal3 = solver3.search(initial3)
-#    print("Initial State", initial3)
-#    print("Found goal", goal3)
-#    for sa in solver3.solution(goal3):
+    "get result for (1,0,8,5,2,4,7,3,6) via AStar"
+    initial3 = (1,0,8,5,2,4,7,3,6)
+    solver3 = AStar(puzzle)
+    goal3 = solver3.search(initial3)
+    print("Initial State", initial3)
+    print("Found goal", goal3)
+    print(solver3.solution(goal3))
+    "get result for (1,0,8,5,2,4,7,3,6) via BFS to verify the result of Astar above"
+#    initial4 = (1,0,8,5,2,4,7,3,6)
+#    solver4 = BFS(puzzle)
+#    goal4 = solver4.search(initial4)
+#    print("Initial State", initial4)
+#    print("Found goal", goal4)
+#    for sa in solver4.solution(goal4):
 #        puzzle.display(sa)
